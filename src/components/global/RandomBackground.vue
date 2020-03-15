@@ -8,6 +8,7 @@
 
 <script>
   import Console from "@/utils/Console";
+  import config from "@/config";
 
   export default {
     name: "RandomBackground",
@@ -33,12 +34,11 @@
         timer: null,
         webpSupport: null,
         blurred: false,
-        // TODO: Update image map.
         // [key] is a special "stageId" to display a special "background image"
         // [value] represents a "background image url" on such route
         specialImageMap: {
-          "main_06-14": "https://penguin-stats.s3.ap-southeast-1.amazonaws.com/backgrounds/fn_0_1.png", // 6-16
-          "main_06-15": "https://penguin-stats.s3.ap-southeast-1.amazonaws.com/backgrounds/fn_0_0.png", // 6-17
+          "main_06-14": `${config.cdn.global}/backgrounds/fn_0_1.png`, // 6-16
+          "main_06-15": `${config.cdn.global}/backgrounds/fn_0_0.png`, // 6-17
         }
       }
     },
@@ -58,7 +58,7 @@
     },
     methods: {
       getImageUrl (id) {
-        return `https://penguin-stats.s3.ap-southeast-1.amazonaws.com/backgrounds/${id}.${this.webpSupport ? 'webp' : 'optimized.png'}`
+        return `${config.cdn.global}/backgrounds/${id}.${this.webpSupport ? 'webp' : 'optimized.png'}`
       },
       setBlur (flag) {
         Console.info("setting blur to", flag)

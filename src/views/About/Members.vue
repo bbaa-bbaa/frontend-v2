@@ -144,7 +144,7 @@
         >
           <v-list-item-avatar>
             <v-img
-              :src="'https://penguin-stats.s3.ap-southeast-1.amazonaws.com/avatars/' + profile.avatar"
+              :src="`${cdn}/avatars/${profile.avatar}`"
             />
           </v-list-item-avatar>
 
@@ -185,6 +185,7 @@
 
 <script>
   import anime from "animejs";
+  import config from "@/config";
 
   const r = {
     frontend: "frontend",
@@ -205,6 +206,7 @@
     name: 'Members',
     data () {
       return {
+        cdn: config.cdn.global,
         profiles: {
           owner: [{
             name: "AlvISs_红白",

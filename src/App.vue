@@ -26,8 +26,7 @@
             align="center"
             justify="center"
           >
-            <span>{{ $t('app.name_line1') }}</span>
-            <span>{{ $t('app.name_line2') }}</span>
+            <span>{{ $t('app.name_line1') }}<br>{{ $t('app.name_line2') }}</span>
           </v-row>
         </div>
       </div>
@@ -191,16 +190,7 @@
             <v-img
               :src="randomizedLogo"
               class="randomizedLogo"
-            >
-              <template v-slot:placeholder>
-                <v-img
-                  :src="require('@/assets/logo.png')"
-                  aspect-ratio="1"
-                  height="32px"
-                  contain
-                />
-              </template>
-            </v-img>
+            />
           </v-avatar>
         </transition>
         <span class="title force-lang-font">
@@ -341,7 +331,7 @@ export default {
   data () {
     return {
       routes: [],
-      randomizedLogo: "",
+      randomizedLogo: require('@/assets/logo.png'),
       localizations: [
         {
           id: 'zh',
@@ -442,7 +432,7 @@ export default {
           window.open(route.meta.link);
         }
       } else {
-        this.$router.push({'name': route.name})
+        this.$router.push({name: route.name})
       }
     },
     randomizeLogo () {

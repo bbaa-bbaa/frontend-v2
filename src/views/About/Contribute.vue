@@ -92,6 +92,16 @@
       {{ $t('contribute.contribute_0') }}
     </p>
 
+    <v-chip
+      href="https://discord.gg/raQjSpq"
+      target="_blank"
+    >
+      <v-icon left>
+        mdi-discord
+      </v-icon>
+      Discord
+    </v-chip>
+
     <ul class="ml-4">
       <li
         v-for="(skill, key) in skills"
