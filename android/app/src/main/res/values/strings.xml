@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Penguin Statistics</string>
+    <string name="title_activity_main">Penguin Statistics</string>
+    <string name="package_name">io.penguin_statistics.app</string>
+    <string name="custom_url_scheme">io.penguin_statistics.app</string>
+</resources>

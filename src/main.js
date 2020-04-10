@@ -11,6 +11,8 @@ import i18n from "@/i18n"
 import config from "@/config"
 import VueNumberInput from '@chenfengyuan/vue-number-input';
 
+Vue.config.productionTip = false
+
 import * as Sentry from '@sentry/browser';
 import * as Integrations from '@sentry/integrations';
 import { Integrations as ApmIntegrations } from '@sentry/apm';
