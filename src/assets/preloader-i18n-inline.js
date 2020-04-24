@@ -56,17 +56,23 @@ let _i18n = {
     "en": {
       "load_title--text": "Loading",
       "load_caption--text": "Initialization may take some time",
-      "load_copyright--text": "Penguin Statistics"
+      "load_copyright--text": "Penguin Statistics",
+      "load_failed--text": "Page resource corrupted. Please upgrade to the latest version",
+      "load_failed_button--text": "UPGRADE AND RELOAD",
     },
     "ja": {
       "load_title--text": "読み込み中...",
       "load_caption--text": "初めての読み込みは動作が遅くなる可能性があります<br>少々お待ち下さい",
-      "load_copyright--text": "ペンギン急便データ統計処理部門"
+      "load_copyright--text": "ペンギン急便データ統計処理部門",
+      "load_failed--text": "Page resource corrupted. Please upgrade to the latest version",
+      "load_failed_button--text": "UPGRADE AND RELOAD",
     },
     "ko": {
       "load_title--text": "로딩중...",
       "load_caption--text": "초기 설정에 시간이 좀 걸릴 수 있으니, 기다려 주시기 바랍니다",
-      "load_copyright--text": "펭귄 물류 데이터 분석 부서"
+      "load_copyright--text": "펭귄 물류 데이터 분석 부서",
+      "load_failed--text": "Page resource corrupted. Please upgrade to the latest version",
+      "load_failed_button--text": "UPGRADE AND RELOAD",
     },
   },
   fill (key, content) {
@@ -74,7 +80,7 @@ let _i18n = {
   },
   render () {
     document.querySelector("#load_copyright_year--text").textContent = new Date().getFullYear().toString();
-    let language = this.getFirstBrowserLanguage();
+    let language = JSON.parse(localStorage.getItem("penguin-stats-settings"))["language"] || this.getFirstBrowserLanguage();
     if (language in this.data && typeof language === "string" && language.length <= 2) {
       let messages = this.data[language];
       for (let [key, value] of Object.entries(messages)) {
