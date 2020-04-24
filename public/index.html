@@ -61,6 +61,49 @@
     </div>
   </div>
 </main>
+<script type="text/javascript">
+  (function () {
+
+    function processNode (node) {
+      var tagName			= (node.tagName || '').toLowerCase();
+
+      var nodeAttribute	=
+        tagName === 'script' && node.src ?
+          'src' :
+          tagName === 'link' && node.rel === 'stylesheet' && node.href ?
+            'href' :
+            null
+      ;
+
+      if (nodeAttribute) {
+        node.onerror	= function () {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (let registration of registrations) {
+              registration.unregister()
+            }})
+          caches.delete("workbox-precache-v2")
+        };
+      }
+    }
+
+    new MutationObserver(function (mutations) {
+      for (var i = 0 ; i < mutations.length ; ++i) {
+        var mutation	= mutations[i];
+        var addedNodes	= mutation.addedNodes;
+
+        for (var j = 0 ; j < addedNodes.length ; ++j) {
+          processNode(addedNodes[j]);
+        }
+      }
+    }).observe(document, {
+      childList: true,
+      attributes: true,
+      characterData: false,
+      subtree: true,
+      attributeOldValue: false
+    });
+  }());
+</script>
 <script type="text/javascript">function _slicedToArray(a,b){return _arrayWithHoles(a)||_iterableToArrayLimit(a,b)||_nonIterableRest()}function _nonIterableRest(){throw new TypeError("Invalid attempt to destructure non-iterable instance");}
 function _iterableToArrayLimit(a,b){if(Symbol.iterator in Object(a)||"[object Arguments]"===Object.prototype.toString.call(a)){var c=[],e=!0,d=!1,f=void 0;try{for(var g=a[Symbol.iterator](),h;!(e=(h=g.next()).done)&&(c.push(h.value),!b||c.length!==b);e=!0);}catch(k){d=!0,f=k}finally{try{if(!e&&null!=g["return"])g["return"]()}finally{if(d)throw f;}}return c}}function _arrayWithHoles(a){if(Array.isArray(a))return a}
 var _i18n={getFirstBrowserLanguageWithRegionCode:function(){var a=window.navigator,b=["language","browserLanguage","systemLanguage","userLanguage"],c,e=null;if(Array.isArray(a.languages))for(c=0;c<a.languages.length;c++){var d=a.languages[c];var f=d.length;!e&&f&&(e=d);if(d&&2<f)return d}for(c=0;c<b.length;c++)if(d=a[b[c]],null!=d&&(f=d.length,!e&&f&&(e=d),d&&2<f))return d;return e},getFirstBrowserLanguage:function(){var a=this.getFirstBrowserLanguageWithRegionCode().replace("_","-");if(!a)return"zh";
