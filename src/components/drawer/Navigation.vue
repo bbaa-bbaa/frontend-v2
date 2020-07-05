@@ -3,7 +3,7 @@
     v-if="!route.children || route.meta.forceSingle"
     :key="route.name"
     :class="route.path === $route.path ? activeClass : ''"
-    :two-line="route.meta.twoLine"
+    :two-line="!!route.meta.twoLine"
     @click="navigate(route)"
   >
     <v-list-item-icon>
