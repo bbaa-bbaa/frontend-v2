@@ -22,6 +22,7 @@ import NotFound from "@/views/NotFound";
 import AdvancedQuery from "@/views/AdvancedQuery";
 import SiteStats from "@/views/SiteStats";
 import Planner from "@/views/Planner";
+import Search from "@/views/Search";
 // import DataDebugger from "@/components/debug/DataDebugger";
 
 const originalPush = Router.prototype.push;
@@ -127,6 +128,15 @@ const router = new Router({
       icon: 'mdi-floor-plan',
       i18n: 'menu.planner',
       twoLine: 'menu.overline.planner'
+    }
+  },
+  {
+    path: '/search',
+    name: 'Search',
+    component: Search,
+    meta: {
+      icon: 'mdi-magnify',
+      i18n: 'menu.search'
     }
   },
   {
