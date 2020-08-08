@@ -635,7 +635,7 @@ const categories = [
 ];
 
 export default {
-  name: "Report",
+  name: "ReportByZone",
   components: {ItemIcon, Subheader, StageSelector, ItemStepper, Item },
   mixins: [Theme],
   data: () => ({
