@@ -1,7 +1,8 @@
 import RectRecognition from "./RectRecognition";
 import StageRecognition from "./StageRecognition";
 import ItemRecognition from "./ItemRecognition";
-export default class DropsRecognition {
+import RecognitionData from "./Data/RecognitionData";
+export default class DropRecognition {
   constructor(img) {
     this.Image = img;
     this.Canvas = document.createElement("canvas");
@@ -68,7 +69,7 @@ export default class DropsRecognition {
         if (AreaDiff > 1000) {
           Rect.type = "LUCKY_DROP";
           Rect.AreaDiff = AreaDiff;
-        } else if ((Rect.type == "LUCKY_DROP")) {
+        } else if (Rect.type == "LUCKY_DROP") {
           Rect.type == "SPECIAL_DROP";
         }
       }
@@ -82,10 +83,13 @@ export default class DropsRecognition {
       let Result = { type: Type };
       if (DetectType.includes(Type)) {
         let DropList = [];
-        for (let Drop of DropsRecognition.Stage[this.Stage.Code].dropInfos) {
+        for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
           if ((Drop.dropType == Type || Type == "ALL_DROP") && Drop.itemId && Drop.itemId != "furni") {
             DropList.push({ id: Drop.itemId, range: Drop.bounds });
           }
+        }
+        for (let Drop of DropRecognition.ActivityItem) {
+          DropList.push({ id: Drop, range: {lower:0,upper:999} });
         }
         // console.log(Type);
         let Item = new ItemRecognition(
@@ -104,7 +108,7 @@ export default class DropsRecognition {
           if (ratio > 1) {
             return 1;
           }
-          let range,linear_val;
+          let range, linear_val;
           if (ratio < 0.5) {
             range = 1.0 - 0.5;
             linear_val = ratio / (range * 2.0);
@@ -114,7 +118,7 @@ export default class DropsRecognition {
             linear_val = ratio / (range * 2.0);
             return linear_val + (1.0 - linear_val) * Math.pow((linear_val - 0.5) * 2, 0.2);
           }
-        })(Rect.AreaDiff/2000);
+        })(Rect.AreaDiff / 2000);
         Object.assign(Result, Item);
       }
       this.Items.push(Result);
@@ -140,15 +144,15 @@ export default class DropsRecognition {
       )
     );
   }
-  static CheckDataComplete(){
-    if(ItemRecognition.ItemSourceHash && DropsRecognition.Stage) {
-      for(let v of Object.values(DropsRecognition.Stage)) {
-        if(v.dropInfos){
-        for (let i of v.dropInfos){
-          if (!(i.ItemId in ItemRecognition.ItemSourceHash)){
-            throw Error() //数据不完整
+  static CheckDataComplete() {
+    if (ItemRecognition.ItemSourceHash && DropRecognition.Stage) {
+      for (let v of Object.values(DropRecognition.Stage)) {
+        if (v.dropInfos) {
+          for (let i of v.dropInfos) {
+            if (!(i.ItemId in ItemRecognition.ItemSourceHash)) {
+              throw Error("Data Error"); //数据不完整
+            }
           }
-        }
         }
       }
     }
@@ -156,13 +160,25 @@ export default class DropsRecognition {
   static init(dataName, Data) {
     switch (dataName) {
       case "Stage":
-        DropsRecognition.Stage = Data;
-        DropsRecognition.CheckDataComplete();
+        DropRecognition.Stage = Data;
+        DropRecognition.CheckDataComplete();
         break;
       case "ItemHashs":
-        ItemRecognition.init(Data).then(()=>{
-          DropsRecognition.CheckDataComplete();
-        });
+        var Reader = new FileReader();
+        Reader.onload = () => {
+          Data = RecognitionData.Decode(new Uint8Array(Reader.result));
+          DropRecognition.ActivityItem = [];
+          var newdata = {};
+          for (let [k, v] of Object.entries(Data)) {
+            if (/(ACTIVITY|VOUCHER_MGACHA)/.test(v.type)) DropRecognition.ActivityItem.push(k);
+            newdata[k] = v.hash;
+          }
+
+          ItemRecognition.init(newdata);
+          DropRecognition.CheckDataComplete();
+        };
+        Reader.readAsArrayBuffer(Data);
+
         break;
     }
   }

@@ -175,15 +175,19 @@ report:
       limitation: 本次汇报与现有数据差距较大，继续提交可能导致此次汇报被判定为异常，无法计入全部统计数据中。
   recognition:
     step:
-      first: 加载识别数据
-      second: 选择掉落截图
-      third: 图像识别
-      fourth: 汇报识别数据
+      first: 选择掉落截图
+      second: 图像识别
+      third: 汇报识别数据
+    result:
+      stagetime: 进行的关卡数量
+      drops: 获得的掉落物总数
+      sanity: 共消耗理智
+    tip: 支持选择多个文件，若浏览器不支持，请尝试升级或换用Chrome/Safari浏览器
+    tip2: 若掉落超过屏幕边界，请把固定掉落的物品(经验/龙门币)拖到左边再截图识别
+    wip: 正在识别
     file: "点击选择掉落截图"
-    filechosen: "已选择{count}个图片文件"
+    filechosen: "已选择{0}个图片文件"
     start: "开始识别"
-    error:
-      type: "文件类型错误"
     function: "功能"
     showimage: "查看原图"
     mark:

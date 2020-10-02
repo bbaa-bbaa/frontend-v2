@@ -1,7 +1,6 @@
 import Rectangle from "./Rectangle";
 import ConnectedAreaRecognition from "./ConnectedAreaRecognition";
 import NumbersHashList from "./Data/NumberHashList.json";
-import RecognitionData from "./Data/RecognitionData";
 for (let hash of NumbersHashList) {
   if (hash.hash instanceof Array) {
     hash.hash = hash.hash.map(v => v / hash.count);
@@ -118,27 +117,44 @@ export default class ItemRecognition {
     }
     let XStart = false,
       XEnd = false,
+      EndWait = 0,
       YStart = 0,
       Find = false;
     let NumberRect = new Rectangle();
+
     for (let y = this.Height >> 1; y < this.Height; y++) {
       XStart = false;
       XEnd = false;
+      EndWait = 0;
       for (let x = this.Width >> 1; x < this.Width; x++) {
-        let GreyUp = distance =>
-          (this.Matrix[y - distance][x][0] + this.Matrix[y - distance][x][1] + this.Matrix[y - distance][x][2]) / 3;
-        let GreyNow = (this.Matrix[y][x][0] + this.Matrix[y][x][1] + this.Matrix[y][x][2]) / 3;
-        if (
-          (this.ItemId == "3301"
-            ? Math.abs(GreyNow - GreyUp(1))
-            : Math.max(Math.abs(GreyNow - GreyUp(1)), Math.abs(GreyNow - GreyUp(2)), GreyNow - GreyUp(3))) > 20
-        ) {
+        let [R, G, B] = this.Matrix[y][x];
+        let RGBUp = distance => this.Matrix[y - distance][x];
+        let GreyUp = distance => RGBUp(distance).reduce((a, b) => a + b) / 3;
+        let GreyNow = (R + G + B) / 3;
+
+        let SpecialRule = {
+          "3301": () =>
+            Math.max(Math.abs(GreyNow - GreyUp(1)), Math.abs(GreyNow - GreyUp(2)), GreyNow - GreyUp(3)) > 20,
+          default: () =>
+            (Math.abs(GreyNow - GreyUp(1)) > 15 ||
+              Math.abs(R - RGBUp(1)[0]) > 30 ||
+              Math.abs(G - RGBUp(1)[1]) > 30 ||
+              Math.abs(B - RGBUp(1)[2]) > 30) &&
+            GreyNow < 90
+        };
+        if (this.ItemId in SpecialRule ? SpecialRule[this.ItemId]() : SpecialRule.default()) {
           if (!XStart) {
             XStart = x;
           } else {
             XEnd = x;
+            EndWait = 0;
           }
         } else {
+          if (XStart) {
+            if (EndWait++ < 1 && x != this.Width - 1) {
+              continue;
+            }
+          }
           if (XEnd - XStart + 1 > 20) {
             Find = true;
             break;
@@ -313,14 +329,7 @@ export default class ItemRecognition {
       Confidence: NumConfidence
     };
   }
-  static init(blob) {
-    return new Promise(resolve => {
-      let Reader = new FileReader();
-      Reader.onload = () => {
-        ItemRecognition.ItemSourceHash = RecognitionData.Decode(new Uint8Array(Reader.result));
-        resolve();
-      };
-      Reader.readAsArrayBuffer(blob);
-    });
+  static init(data) {
+    ItemRecognition.ItemSourceHash = data;
   }
 }
