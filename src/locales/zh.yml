@@ -177,22 +177,25 @@ report:
     step:
       first: 选择掉落截图
       second: 图像识别
-      third: 汇报识别数据
+      third: 检查识别结果
+      fourth: 数据总览
     result:
       stagetime: 进行的关卡数量
       drops: 获得的掉落物总数
       sanity: 共消耗理智
+    recordstate:
+      trust: 此记录会被上报
+      deleted: 该记录不会上报
+      untrust: 识别置信度低，记录不会上报
     tip: 支持选择多个文件，若浏览器不支持，请尝试升级或换用Chrome/Safari浏览器
     tip2: 若掉落超过屏幕边界，请把固定掉落的物品(经验/龙门币)拖到左边再截图识别
+    checkdata: 检查你的识别结果
+    readyforreport: 准备上报
     wip: 正在识别
-    file: "点击选择掉落截图"
-    filechosen: "已选择{0}个图片文件"
-    start: "开始识别"
-    function: "功能"
-    showimage: "查看原图"
-    mark:
-      untrust: "标记为不可信"
-      trust: "标记为可信"
+    file: 点击选择掉落截图
+    filechosen: 已选择{0}个图片文件
+    start: 开始识别
+    edit: 编辑
     submit: "确认提交可信的作战记录"
   rules:
     item:
