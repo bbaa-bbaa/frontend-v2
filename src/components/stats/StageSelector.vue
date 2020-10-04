@@ -226,6 +226,12 @@
             details: ""
           }
         }
+      },
+      stage:{
+        type:String,
+        default(){
+          return ""
+        }
       }
     },
     data() {
@@ -387,7 +393,6 @@
         if (!this.selected.stage) return null;
         const allStagesInZone = get.stages.byParentZoneId(this.selected.zone);
         const stageInZoneIndex = allStagesInZone.indexOf(this.selectedStage);
-
         function validStage(stage) {
           // console.log(stageInZoneIndex, stage)
           return existUtils.existence(stage) ? stage : null
@@ -406,6 +411,12 @@
     },
     beforeMount () {
       this.checkRoute()
+    },
+    mounted(){
+      if(this.stage){
+        let Stage=get.stages.byStageCode(this.stage);
+        this.selectStage(Stage.zoneId,Stage.stageId);
+      }
     },
     methods: {
       selectStage (zone, stage, incrementStep = true) {

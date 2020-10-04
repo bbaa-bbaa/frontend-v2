@@ -5,7 +5,7 @@ import store from '@/store'
 
 // IdempotencyKey
 export default {
-  async submitReport({stageId, drops},...patch) {
+  async submitReport({stageId, drops},patch) {
     return service.post("/report", {
       drops,
       stageId,

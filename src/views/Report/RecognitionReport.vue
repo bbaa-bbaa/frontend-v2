@@ -1,5 +1,6 @@
 <template>
   <v-stepper
+    v-if="server == 'CN'"
     v-model="step"
     :alt-labels="!small"
     class="transparent elevation-0 full-width pa-4"
@@ -115,7 +116,7 @@
         <v-row>
           <v-btn
             :block="true"
-            @click="step=4"
+            @click="step = 4"
           >
             {{ $t("report.recognition.readyforreport") }}
           </v-btn>
@@ -142,7 +143,10 @@
           >
             <v-card
               class="card-item"
-              :class="{ 'card-item-untrusted': OriginalRecognitionResult[Stage.Index].State == 'untrusted' }"
+              :class="{
+                'card-item-untrusted': OriginalRecognitionResult[Stage.Index].State == 'untrusted',
+                'card-item-deleted': OriginalRecognitionResult[Stage.Index].State == 'deleted'
+              }"
             >
               <v-card-text>
                 <div
@@ -158,6 +162,19 @@
                   </span>
                   <figure :style="genStageCodeImage(Stage.Index)" />
                   <v-spacer />
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        v-bind="attrs"
+                        class="mr-1"
+                        v-on="on"
+                        @click="mshowImage(Stage.Index)"
+                      >
+                        mdi-image-size-select-actual
+                      </v-icon>
+                    </template>
+                    <span>{{ $t("report.recognition.showimage") }}</span>
+                  </v-tooltip>
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
@@ -220,7 +237,7 @@
                 </div>
                 <div class="d-flex flex-wrap justify-start md-2">
                   <figure
-                    v-for="(ImgStyle, idx) in genItemImages(Stage.Index)"
+                    v-for="(ImgStyle, idx) in OriginalRecognitionResult[Stage.Index].ItemImages"
                     :key="Stage.Index * 1000 + idx"
                     style="border-radius:4px;"
                     :style="ImgStyle"
@@ -380,21 +397,176 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col>
+            <v-btn
+              block
+              color="success"
+              :disabled="SubmitDialog.open"
+              @click="submit"
+            >
+              {{ $t("report.recognition.submit") }}
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-stepper-content>
     </v-stepper-items>
+    <v-dialog v-model="showImage.open">
+      <v-card>
+        <v-card-title
+          class="indigo pb-4 elevation-2 white--text"
+          style="background: #a14042; line-height: 1.1;"
+        >
+          <div
+            class="headline font-weight-bold d-block"
+            style="width: 100%"
+          >
+            {{ $t("report.recognition.showimage") }}
+          </div>
+        </v-card-title>
+
+        <v-card-text>
+          <div class="image-box mt-2">
+            <img
+              :src="showImage.url"
+              class="csc"
+            >
+          </div>
+        </v-card-text>
+
+        <v-card-actions class="elevation-4">
+          <v-btn
+            text
+            block
+            large
+            @click="showImage.open = false"
+          >
+            <v-divider style="opacity: 0.3" />
+            <span class="mx-4 d-flex align-center"> <v-icon left>mdi-close</v-icon>{{ $t("meta.dialog.close") }} </span>
+            <v-divider style="opacity: 0.3" />
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
+      v-model="Editor.open"
+      fullscreen
+      transition="dialog-bottom-transition"
+    >
+      <v-card>
+        <v-card-title
+          class="indigo pb-4 elevation-2 white--text"
+          style="background: #a14042; line-height: 1.1;"
+        >
+          <div
+            class="headline font-weight-bold d-block"
+            style="width: 100%"
+          >
+            {{ $t("report.recognition.editreport") }}
+          </div>
+        </v-card-title>
+
+        <v-card-text>
+          <ReportEditor
+            :reportdata="genReportEditorData"
+            @change="changeRecord"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+    <v-dialog
+      v-model="SubmitDialog.open"
+      persistent
+    >
+      <v-card
+        v-if="!SubmitDialog.finish"
+        class="d-flex fill-height"
+      >
+        <v-card-text>
+          <v-row
+            align="center"
+            justify="center"
+          >
+            <v-col
+              cols="12"
+              class="px-1 py-12 text-center"
+              style="width:100%"
+            >
+              <PreloaderInline class="mx-auto mb-6" />
+              <h1 class="title">
+                正在提交记录
+              </h1>
+              <v-row>
+                <v-col>
+                  <v-progress-linear
+                    :value="((SubmitDialog.now + 1) / TrustedResult.length) * 100"
+                    height="20"
+                    class="mx-auto"
+                    style="width:90%"
+                  >
+                    {{ SubmitDialog.now + 1 }} / {{ TrustedResult.length }}
+                  </v-progress-linear>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+      <v-card
+        v-if="SubmitDialog.finish"
+        class="d-flex fill-height"
+      >
+        <v-card-text>
+          <v-alert
+            type="success"
+            class="mt-4"
+          >
+            提交完成
+          </v-alert>
+          <v-card-actions class="elevation-4">
+            <v-btn
+              text
+              block
+              large
+              @click="reload"
+            >
+              <v-divider style="opacity: 0.3" />
+              <span class="mx-4 d-flex align-center">
+                <v-icon left>mdi-close</v-icon>{{ $t("meta.dialog.close") }}
+              </span>
+              <v-divider style="opacity: 0.3" />
+            </v-btn>
+          </v-card-actions>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-stepper>
+  <v-alert
+    v-else
+    type="error"
+    width="80%"
+    class="mx-auto mt-4"
+  >
+    {{ server }} server is not supported
+  </v-alert>
 </template>
 
 <script>
   import Item from "@/components/global/Item";
+  import PreloaderInline from "@/components/global/PreloaderInline";
+  import ReportEditor from "@/components/recognition/ReportEditor";
+  import snackbar from "@/utils/snackbar";
   import CDN from "@/mixins/CDN";
   import Theme from "@/mixins/Theme";
+  import config from "@/config";
   import get from "@/utils/getters";
+  import Cookies from "js-cookie";
+  import report from "@/apis/report";
   import axios from "axios";
   import { DropRecognition, FontLoaded } from "@/vendors/DropRecognition";
   export default {
     name: "RecognitionReport",
-    components: { Item },
+    components: { Item, ReportEditor, PreloaderInline },
     mixins: [Theme, CDN],
     data: () => ({
       step: 0,
@@ -403,7 +575,21 @@
       Stages: [],
       ImageFiles: [],
       ImageURI: [],
-      ImageEle: []
+      ImageEle: [],
+      showImage: {
+        open: false,
+        url: ""
+      },
+      Editor: {
+        Buffer: {},
+        Index: -1,
+        open: false
+      },
+      SubmitDialog: {
+        open: false,
+        now: 0,
+        finish: false
+      }
     }),
     computed: {
       fileinput() {
@@ -490,6 +676,19 @@
         return this.TrustedResult.reduce((prev, now) => {
           return prev + this.Stages[now.Stage.Code].apCost;
         }, 0);
+      },
+      genReportEditorData() {
+        if (this.Editor.open) {
+          return {
+            StageCode: this.OriginalRecognitionResult[this.Editor.Index].Stage.Code,
+            OriginImages: this.OriginalRecognitionResult[this.Editor.Index].ItemImages,
+            Items: this.OriginalRecognitionResult[this.Editor.Index].Items
+          };
+        }
+        return {};
+      },
+      server() {
+        return this.$store.getters["dataSource/server"];
       }
     },
     mounted() {
@@ -531,6 +730,7 @@
         if (RecognitionResult.Stage.Confidence < 0.75) return false;
         if (
           RecognitionResult.Items.some(Item => {
+            if (Item.type == "ALL_DROP") return true;
             if (!Item.Confidence) return false;
             if (Item.Confidence.ItemId && Item.Confidence.ItemId < 0.65) return true;
             if (
@@ -545,6 +745,9 @@
           return false;
         return true;
       },
+      reload() {
+        this.$router.go(0);
+      },
       RecognitionOne() {
         this.$nextTick(function() {
           let NowIndex = this.QueueIndex;
@@ -556,6 +759,7 @@
               RecognitionInterface.idx = NowIndex;
               RecognitionInterface.State = this.IsTrust(RecognitionInterface) ? "trusted" : "untrusted";
               this.OriginalRecognitionResult.push(RecognitionInterface);
+              this.OriginalRecognitionResult[NowIndex].ItemImages = this.genItemImages(NowIndex);
               if (++NowIndex < this.ImageURI.length) {
                 this.RecognitionOne(this.QueueIndex++);
               } else {
@@ -576,9 +780,6 @@
       changeState(idx) {
         this.OriginalRecognitionResult[idx].State =
           this.OriginalRecognitionResult[idx].State == "trusted" ? "deleted" : "trusted";
-      },
-      editRecord(idx) {
-        return idx;
       },
       genStageCodeImage(idx) {
         let scale = 32 / this.OriginalRecognitionResult[idx].BoundData.Stage.height;
@@ -611,6 +812,82 @@
           });
         }
         return Ret;
+      },
+      mshowImage(idx) {
+        if (this.showImage.open) return;
+        this.showImage.open = true;
+        this.showImage.url = this.ImageURI[idx];
+      },
+      editRecord(idx) {
+        this.Editor.Index = idx;
+        this.Editor.open = true;
+      },
+      changeRecord(data) {
+        this.$nextTick(function() {
+          this.Editor.open = false;
+        });
+        // eslint-disable-next-line no-unreachable
+        this.OriginalRecognitionResult[this.Editor.Index].Items = [];
+        for (let Item of data.Items) {
+          this.OriginalRecognitionResult[this.Editor.Index].Items.push({
+            ItemId: Item.itemId,
+            Count: Item.quantity,
+            type: Item.dropType
+          });
+        }
+        this.OriginalRecognitionResult[this.Editor.Index].State = "trusted";
+      },
+      submit() {
+        this.SubmitDialog.open = true;
+        this.submitOneRecord()
+          .then(() => {
+            if (++this.SubmitDialog.now < this.TrustedResult.length) {
+              this.submit();
+            } else {
+              this.SubmitDialog.finish = true;
+            }
+          })
+          .catch(() => {
+            snackbar.networkError();
+            setTimeout(()=>{this.submit()},1000);
+          });
+      },
+      ConvertData(Items) {
+        return Items.map(Item => {
+          if (!["LUCKY_DROP", "SPECIAL_DROP", "EXTRA_DROP", "NORMAL_DROP"].includes(Item.type)) return;
+          return {
+            quantity: Item.Count,
+            dropType: Item.ItemId == "furni" ? "FURNITURE" : Item.type,
+            itemId: Item.ItemId
+          };
+        }).filter(a => a);
+      },
+      submitOneRecord() {
+        const userId = Cookies.get(config.authorization.userId.cookieKey);
+        return report
+          .submitReport(
+            {
+              stageId: get.stages.byStageCode(this.OriginalRecognitionResult[this.SubmitDialog.now].Stage.Code).stageId,
+              drops: this.ConvertData(this.OriginalRecognitionResult[this.SubmitDialog.now].Items)
+            },
+            { source: "RecognitionReport" }
+          )
+          .then(({ data }) => {
+            const reportedUserId = Cookies.get(config.authorization.userId.cookieKey);
+            if (userId !== reportedUserId) {
+              this.$store.dispatch("auth/login", {
+                userId: reportedUserId
+              });
+            }
+            this.$ga.event(
+              "report",
+              "submit_single",
+              get.stages.byStageCode(this.OriginalRecognitionResult[this.SubmitDialog.now].Stage.Code).stageId,
+              1
+            );
+
+            this.lastSubmissionId = data;
+          });
       }
     }
   };
@@ -650,6 +927,10 @@
   }
   .card-item-untrusted {
     border: 2px solid #d50000 !important;
+  }
+  .card-item-deleted {
+    border: 2px solid #757575 !important;
+    opacity: 0.75;
   }
   .card-item-title__clickable {
     margin-left: 2px;

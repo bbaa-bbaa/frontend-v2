@@ -191,12 +191,15 @@ report:
     tip2: 若掉落超过屏幕边界，请把固定掉落的物品(经验/龙门币)拖到左边再截图识别
     checkdata: 检查你的识别结果
     readyforreport: 准备上报
+    editreport: 修改识别结果
+    showimage: 查看原始图片
     wip: 正在识别
     file: 点击选择掉落截图
     filechosen: 已选择{0}个图片文件
     start: 开始识别
     edit: 编辑
-    submit: "确认提交可信的作战记录"
+    success: 提交完成
+    submit: "确认提交以上数据"
   rules:
     item:
       _name: 物品项

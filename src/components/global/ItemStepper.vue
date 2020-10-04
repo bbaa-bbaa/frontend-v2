@@ -82,6 +82,11 @@
       bus: {
         type: Object,
         required: true
+      },
+      defaultquantity:{
+        type:Number,
+        required:false,
+        default:0
       }
     },
     data() {
@@ -97,6 +102,9 @@
     },
     mounted() {
       this.bus.$on("reset", this.reset)
+      if(this.defaultquantity!==0){
+        this.quantity=this.defaultquantity;
+      }
     },
     methods: {
       increment() {
