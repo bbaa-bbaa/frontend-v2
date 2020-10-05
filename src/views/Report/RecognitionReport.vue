@@ -572,7 +572,6 @@
       step: 0,
       OriginalRecognitionResult: [],
       QueueIndex: 0,
-      Stages: [],
       ImageFiles: [],
       ImageURI: [],
       ImageEle: [],
@@ -674,7 +673,7 @@
       },
       allSanity() {
         return this.TrustedResult.reduce((prev, now) => {
-          return prev + this.Stages[now.Stage.Code].apCost;
+          return prev + get.stages.byStageCode(now.Stage.Code).apCost;
         }, 0);
       },
       genReportEditorData() {
@@ -689,6 +688,9 @@
       },
       server() {
         return this.$store.getters["dataSource/server"];
+      },
+      allStage() {
+        return get.stages.all();
       }
     },
     mounted() {
@@ -699,7 +701,6 @@
         stages[stage.code] = stage;
       }
       DropRecognition.init("Stage", stages);
-      this.Stages = stages;
       FontLoaded.then(() => {
         axios.get("/Items.dHash", { responseType: "blob" }).then(Hashs => {
           DropRecognition.init("ItemHashs", Hashs.data);
@@ -723,6 +724,17 @@
       },
       startRecognition() {
         if (this.ImageFiles.length == 0) return;
+        let stages = {};
+        let stageArray = get.stages.all();
+
+        if (stageArray.length == 0) {
+          snackbar.launch("error", 2000, "report.recognition.loading");
+          return;
+        }
+        for (let stage of stageArray) {
+          stages[stage.code] = stage;
+        }
+        DropRecognition.init("Stage", stages);
         this.step = 2;
         this.RecognitionOne();
       },
@@ -826,7 +838,7 @@
         this.$nextTick(function() {
           this.Editor.open = false;
         });
-        // eslint-disable-next-line no-unreachable
+        this.OriginalRecognitionResult[this.Editor.Index].Stage.Code = data.Stage;
         this.OriginalRecognitionResult[this.Editor.Index].Items = [];
         for (let Item of data.Items) {
           this.OriginalRecognitionResult[this.Editor.Index].Items.push({
@@ -848,8 +860,9 @@
             }
           })
           .catch(() => {
-            snackbar.networkError();
-            setTimeout(()=>{this.submit()},1000);
+            setTimeout(() => {
+              snackbar.launch("info", 1000, "report.recognition.retry");
+            }, 1000);
           });
       },
       ConvertData(Items) {

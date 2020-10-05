@@ -18,7 +18,7 @@ export default {
       icon: icon || getDefaultIcon(type) || "mdi-alert-circle"
     })
   },
-  networkError () {
-    this.launch("error", 10000, "network.error")
+  networkError (timeout = 10000) {
+    this.launch("error", timeout, "network.error")
   }
 }
