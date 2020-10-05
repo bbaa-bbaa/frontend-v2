@@ -80,7 +80,37 @@ export default class ItemRecognition {
       }
     }
     this.Confidence.ItemId = Confidence;
+    if (!isNaN(Number(Result))) {
+      let ItemId = Number(Result);
+      let PId = Math.floor(ItemId / 1000);
+      if (PId == 2) {
+        let ColorList = [
+          [215, 240, 9],
+          [10, 175, 241],
+          [242, 217, 11],
+          [255, 249, 225]
+        ];
+
+        let Distance = Infinity,
+          Ret = -1;
+        for (let [idx, Color] of ColorList.entries()) {
+          let dis = this.RGBDiff(this.Matrix[this.Height >> 1][this.Width >> 1], Color);
+          if (dis < Distance) {
+            Distance = dis;
+            Ret = PId * 1000 + idx + 1;
+          }
+        }
+        if (this.Rules.some(a => a.id == Ret)) {
+          return Ret;
+        } else {
+          this.Confidence.ItemId = Math.max(0, this.Confidence.ItemId - 0.1);
+        }
+      }
+    }
     return Result;
+  }
+  RGBDiff(rgb1, rgb2) {
+    return rgb1.map((v, i) => Math.abs(v - rgb2[i])).reduce((a, b) => a + b);
   }
   CompareItemHash(Hash1, Hash2) {
     let Hash1String = [].concat(...Hash1);
