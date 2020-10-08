@@ -200,6 +200,7 @@ report:
     filechosen: 已选择{0}个图片文件
     start: 开始识别
     edit: 编辑
+    typeerror: 类型识别可能有误,请检查图片后编辑
     success: 提交完成
     submit: "确认提交以上数据"
   rules:

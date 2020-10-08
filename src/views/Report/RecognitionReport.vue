@@ -778,22 +778,44 @@
                 this.step = 3;
               }
             } catch (e) {
-              this.OriginalRecognitionResult[NowIndex] = {
+              this.OriginalRecognitionResult.push({
                 error: e,
                 trust: false,
+                ItemImages: [],
+                Stage: { Code: "Error" },
+                State: "untrusted",
+                Items: [],
                 idx: NowIndex
-              };
-              throw e;
+              });
+              console.error(e);
+              if (++NowIndex < this.ImageURI.length) {
+                this.RecognitionOne(this.QueueIndex++);
+              } else {
+                this.step = 3;
+              }
             }
           }.bind(this);
           NowImage.src = this.ImageURI[NowIndex];
         });
       },
       changeState(idx) {
+        if (
+          this.OriginalRecognitionResult[idx].Items.some(Item => {
+            if (Item.type == "ALL_DROP") {
+              return true;
+            }
+            return false;
+          })
+        ) {
+          snackbar.launch("info","2000","report.recognition.typeerror")
+          return;
+        }
+
         this.OriginalRecognitionResult[idx].State =
           this.OriginalRecognitionResult[idx].State == "trusted" ? "deleted" : "trusted";
       },
       genStageCodeImage(idx) {
+        if (this.OriginalRecognitionResult[idx].error) return {};
         let scale = 32 / this.OriginalRecognitionResult[idx].BoundData.Stage.height;
         return {
           "background-image": `url('${this.ImageURI[idx]}')`,
@@ -862,6 +884,7 @@
           .catch(() => {
             setTimeout(() => {
               snackbar.launch("info", 1000, "report.recognition.retry");
+              this.submit();
             }, 1000);
           });
       },

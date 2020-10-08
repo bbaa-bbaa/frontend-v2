@@ -16,9 +16,7 @@
         <span
           class="text-center"
           style="word-break: keep-all"
-        >
-          {{ $t('zone.name') }} & {{ $t('stage.name') }}
-        </span>
+        > {{ $t("zone.name") }} & {{ $t("stage.name") }} </span>
         <small
           v-if="step > 1"
           class="mt-2"
@@ -39,7 +37,7 @@
     <v-stepper-items class="stepper-overflow-initial">
       <v-stepper-content
         :step="1"
-        :class="{'pa-0': small}"
+        :class="{ 'pa-0': small }"
       >
         <v-row class="px-1">
           <v-col
@@ -61,13 +59,11 @@
               <!--                class="pl-2"-->
               <!--              />-->
               <v-subheader>
-                <v-icon
-                  class="mr-2"
-                >
+                <v-icon class="mr-2">
                   {{ category.zones[0].icon }}
                 </v-icon>
                 <span>
-                  {{ $t(['zone.types', category.id].join('.')) }}
+                  {{ $t(["zone.types", category.id].join(".")) }}
                 </span>
               </v-subheader>
               <v-expansion-panels
@@ -78,11 +74,11 @@
                   v-for="zone in category.zones"
                   :key="zone.zoneId"
                   class="bkop-light stage-card--background"
-                  :style="{'background-image': zone.image ? `url(${zone.image}) !important` : null}"
+                  :style="{ 'background-image': zone.image ? `url(${zone.image}) !important` : null }"
                 >
                   <v-expansion-panel-header
                     class="overflow-hidden bkop-medium"
-                    :class="{'stage-card--header': !!zone.image}"
+                    :class="{ 'stage-card--header': !!zone.image }"
                   >
                     <v-row align="center">
                       <span
@@ -94,21 +90,22 @@
                         }"
                         class="text--darken-1 font-weight-bold ml-2 mr-1"
                       >
-                        {{ $t('zone.status.' + zone.timeValid) }}
+                        {{ $t("zone.status." + zone.timeValid) }}
                       </span>
                       <span
                         v-if="zone.isPermanentOpen"
                         class="text--darken-1 font-weight-bold orange--text ml-2 mr-1"
                       >
-                        {{ $t('zone.status.permanentOpen') }}
+                        {{ $t("zone.status.permanentOpen") }}
                       </span>
 
                       <span
                         class="subtitle-1 pl-2"
-                        :class="{'text--darken-1 font-weight-bold': zone.isActivity && small,
-                                 'red--text': zone.isActivity && small && zone.timeValid === 1,
-                                 'green--text': zone.isActivity && small && zone.timeValid === 0,
-                                 'grey--text': zone.isActivity && small && zone.timeValid === -1
+                        :class="{
+                          'text--darken-1 font-weight-bold': zone.isActivity && small,
+                          'red--text': zone.isActivity && small && zone.timeValid === 1,
+                          'green--text': zone.isActivity && small && zone.timeValid === 0,
+                          'grey--text': zone.isActivity && small && zone.timeValid === -1
                         }"
                       >
                         {{ strings.translate(zone, "zoneName") }}
@@ -125,9 +122,7 @@
                       <!--                        </span>-->
                     </v-row>
                   </v-expansion-panel-header>
-                  <v-expansion-panel-content
-                    :class="{'stage-card--content': !!zone.image}"
-                  >
+                  <v-expansion-panel-content :class="{ 'stage-card--content': !!zone.image }">
                     <div
                       v-if="zone.isActivity"
                       class="caption mx-1 mt-3 mb-2"
@@ -139,7 +134,6 @@
                         v-for="stage in zone.stages"
                         :key="stage.stageId"
                         :stage="stage"
-
                         @click.native="selectStage(zone.zoneId, stage.stageId)"
                       />
                     </div>
@@ -180,7 +174,7 @@
             </v-fade-transition>
           </div>
         </v-expand-transition>
-        
+
         <span
           v-if="!$vuetify.breakpoint.xs"
           class="stage-id--background font-weight-black display-4 px-12 py-6"
@@ -198,14 +192,14 @@
   import strings from "@/utils/strings";
   import StageCard from "@/components/stats/StageCard";
   import Console from "@/utils/Console";
-  import {mapGetters} from "vuex";
+  import { mapGetters } from "vuex";
   import CDN from "@/mixins/CDN";
   import existUtils from "@/utils/existUtils";
   import validator from "@/utils/validator";
 
   export default {
     name: "StageSelector",
-    components: {StageCard},
+    components: { StageCard },
     mixins: [CDN],
     props: {
       name: {
@@ -214,23 +208,23 @@
       },
       hideClosed: {
         type: Boolean,
-        default () {
-          return false
+        default() {
+          return false;
         }
       },
       routerNames: {
         type: Object,
-        default () {
+        default() {
           return {
             index: "",
             details: ""
-          }
+          };
         }
       },
-      stage:{
-        type:String,
-        default(){
-          return ""
+      stage: {
+        type: String,
+        default() {
+          return "";
         }
       }
     },
@@ -242,39 +236,39 @@
           stage: null
         },
         stageImages: {
-          "act5d0_zone1": this.cdnDeliver('/backgrounds/zones/act5d0_zone1.jpg'),
-          "act6d5_zone1": this.cdnDeliver('/backgrounds/zones/act6d5_zone1.jpg'),
-          "act7d5_zone1": this.cdnDeliver('/backgrounds/zones/act7d5_zone1.jpg'),
-          "act9d0_zone1": this.cdnDeliver('/backgrounds/zones/act9d0_zone1.jpg'),
-          "act10d5_zone1": this.cdnDeliver('/backgrounds/zones/act10d5_zone1.jpg'),
-          "act11d0_zone1": this.cdnDeliver('/backgrounds/zones/act11d0_zone1.jpg'),
-          "1stact_zone1": this.cdnDeliver('/backgrounds/zones/A001_zone1.jpg'),
-          "act3d0_zone1": this.cdnDeliver('/backgrounds/zones/A003_zone1.jpg'),
-          "act4d0_zone1": this.cdnDeliver('/backgrounds/zones/main_e0.jpg'),
-          "main_0": this.cdnDeliver('/backgrounds/zones/main_0.jpg'),
-          "main_1": this.cdnDeliver('/backgrounds/zones/main_1.jpg'),
-          "main_2": this.cdnDeliver('/backgrounds/zones/main_2.jpg'),
-          "main_3": this.cdnDeliver('/backgrounds/zones/main_3.jpg'),
-          "main_4": this.cdnDeliver('/backgrounds/zones/main_4.jpg'),
-          "main_5": this.cdnDeliver('/backgrounds/zones/main_5.jpg'),
-          "main_6": this.cdnDeliver('/backgrounds/zones/main_6.jpg'),
-          "main_7": this.cdnDeliver('/backgrounds/zones/main_7.jpg'),
-          "gachabox": this.cdnDeliver('/backgrounds/zones/gachabox.jpg'),
+          act5d0_zone1: this.cdnDeliver("/backgrounds/zones/act5d0_zone1.jpg"),
+          act6d5_zone1: this.cdnDeliver("/backgrounds/zones/act6d5_zone1.jpg"),
+          act7d5_zone1: this.cdnDeliver("/backgrounds/zones/act7d5_zone1.jpg"),
+          act9d0_zone1: this.cdnDeliver("/backgrounds/zones/act9d0_zone1.jpg"),
+          act10d5_zone1: this.cdnDeliver("/backgrounds/zones/act10d5_zone1.jpg"),
+          act11d0_zone1: this.cdnDeliver("/backgrounds/zones/act11d0_zone1.jpg"),
+          "1stact_zone1": this.cdnDeliver("/backgrounds/zones/A001_zone1.jpg"),
+          act3d0_zone1: this.cdnDeliver("/backgrounds/zones/A003_zone1.jpg"),
+          act4d0_zone1: this.cdnDeliver("/backgrounds/zones/main_e0.jpg"),
+          main_0: this.cdnDeliver("/backgrounds/zones/main_0.jpg"),
+          main_1: this.cdnDeliver("/backgrounds/zones/main_1.jpg"),
+          main_2: this.cdnDeliver("/backgrounds/zones/main_2.jpg"),
+          main_3: this.cdnDeliver("/backgrounds/zones/main_3.jpg"),
+          main_4: this.cdnDeliver("/backgrounds/zones/main_4.jpg"),
+          main_5: this.cdnDeliver("/backgrounds/zones/main_5.jpg"),
+          main_6: this.cdnDeliver("/backgrounds/zones/main_6.jpg"),
+          main_7: this.cdnDeliver("/backgrounds/zones/main_7.jpg"),
+          gachabox: this.cdnDeliver("/backgrounds/zones/gachabox.jpg")
         }
-      }
+      };
     },
     computed: {
       ...mapGetters("settings", ["lowData"]),
-      bindRouter () {
-        return this.routerNames.index !== "" && this.routerNames.details !== ""
+      bindRouter() {
+        return this.routerNames.index !== "" && this.routerNames.details !== "";
       },
       step: {
-        get () {
-          return this.internalStep
+        get() {
+          return this.internalStep;
         },
-        set (val) {
+        set(val) {
           this.internalStep = val;
-          if (val === 1) this.$emit("select", {zone: null, stage: null});
+          if (val === 1) this.$emit("select", { zone: null, stage: null });
 
           if (!this.bindRouter) return;
           if (val === 1) {
@@ -288,37 +282,47 @@
                 zoneId: this.selected.zone,
                 stageId: this.selected.stage
               }
-            })
+            });
           }
         }
       },
-      strings () {
-        return strings
+      strings() {
+        return strings;
       },
-      small () {
-        return this.$vuetify.breakpoint.smAndDown
+      small() {
+        return this.$vuetify.breakpoint.smAndDown;
       },
       categorizedZones() {
-        const categoriesSet =
-          this.hideClosed ?
-            // Report
+        const categoriesSet = this.hideClosed
+          ? // Report
             [
-              [["ACTIVITY_OPEN", "MAINLINE"], ["ACTIVITY_PERMANENT", "WEEKLY"]], // md, lg & xl
-              [["ACTIVITY_OPEN", "MAINLINE"], ["ACTIVITY_PERMANENT", "WEEKLY"]]  // xs & sm
+              [
+                ["ACTIVITY_OPEN", "MAINLINE"],
+                ["ACTIVITY_PERMANENT", "WEEKLY"]
+              ], // md, lg & xl
+              [
+                ["ACTIVITY_OPEN", "MAINLINE"],
+                ["ACTIVITY_PERMANENT", "WEEKLY"]
+              ] // xs & sm
             ]
-              :
-            // Show Statistics
+          : // Show Statistics
             [
-              [["ACTIVITY_OPEN", "MAINLINE", "WEEKLY"], ["ACTIVITY_PERMANENT", "ACTIVITY_PENDING", "ACTIVITY_CLOSED"]], // md, lg & xl
-              [["ACTIVITY_PENDING", "ACTIVITY_OPEN", "MAINLINE"], ["ACTIVITY_PERMANENT", "WEEKLY", "ACTIVITY_CLOSED"]]  // xs & sm
-            ]
+              [
+                ["ACTIVITY_OPEN", "MAINLINE", "WEEKLY"],
+                ["ACTIVITY_PERMANENT", "ACTIVITY_PENDING", "ACTIVITY_CLOSED"]
+              ], // md, lg & xl
+              [
+                ["ACTIVITY_PENDING", "ACTIVITY_OPEN", "MAINLINE"],
+                ["ACTIVITY_PERMANENT", "WEEKLY", "ACTIVITY_CLOSED"]
+              ] // xs & sm
+            ];
 
         const result = [[], []];
         for (const [index, categories] of categoriesSet[this.small ? 1 : 0].entries()) {
           for (const category of categories) {
             let filter;
             let zones = get.zones.byType(category.startsWith("ACTIVITY") ? "ACTIVITY" : category, false);
-            zones = zones.filter(el => existUtils.existence(el, false))
+            zones = zones.filter(el => existUtils.existence(el, false));
 
             if (category === "ACTIVITY_OPEN") {
               filter = zone => zone.timeValid === 0;
@@ -334,25 +338,26 @@
 
             zones = zones
               .map(zone => {
-                let stages = get.stages.byParentZoneId(zone.zoneId)
+                let stages = get.stages.byParentZoneId(zone.zoneId);
                 if (this.hideClosed) {
-                  stages = stages.filter(stage => !!stage["dropInfos"])
+                  stages = stages.filter(stage => !!stage["dropInfos"]);
                 }
-                stages = stages.filter(el => existUtils.existence(el))
+                stages = stages.filter(el => existUtils.existence(el));
 
                 return {
                   ...zone,
                   stages
-                }
+                };
               })
               // filter out empty zones
-              .filter(el => el.stages.length)
+              .filter(el => el.stages.length);
 
             // sort activity zones by its openTime
             if (category.startsWith("ACTIVITY")) {
-              const server = this.$store.getters["dataSource/server"]
-              zones = zones.slice()
-                .sort((a, b) => a["existence"][server]["openTime"] - b["existence"][server]["openTime"])
+              const server = this.$store.getters["dataSource/server"];
+              zones = zones
+                .slice()
+                .sort((a, b) => a["existence"][server]["openTime"] - b["existence"][server]["openTime"]);
             }
 
             if (this.lowData) {
@@ -360,26 +365,26 @@
                 return {
                   ...el,
                   image: null
-                }
-              })
+                };
+              });
             } else {
               zones = zones.map(el => {
                 if (validator.have(this.stageImages, el.zoneId)) {
                   return {
                     ...el,
                     image: this.stageImages[el.zoneId]
-                  }
+                  };
                 } else {
-                  return el
+                  return el;
                 }
-              })
+              });
             }
 
             if (zones && zones.length) {
               result[index].push({
                 id: category,
                 zones: zones
-              })
+              });
             }
           }
         }
@@ -389,43 +394,46 @@
         if (!this.selected.stage) return {};
         return get.stages.byStageId(this.selected.stage);
       },
-      relativeStages () {
+      relativeStages() {
         if (!this.selected.stage) return null;
         const allStagesInZone = get.stages.byParentZoneId(this.selected.zone);
         const stageInZoneIndex = allStagesInZone.indexOf(this.selectedStage);
         function validStage(stage) {
           // console.log(stageInZoneIndex, stage)
-          return existUtils.existence(stage) ? stage : null
+          return existUtils.existence(stage) ? stage : null;
         }
 
         return {
           prev: stageInZoneIndex > 0 ? validStage(allStagesInZone[stageInZoneIndex - 1]) : null,
-          next: stageInZoneIndex < (allStagesInZone.length - 1) ? validStage(allStagesInZone[stageInZoneIndex + 1]) : null
-        }
+          next: stageInZoneIndex < allStagesInZone.length - 1 ? validStage(allStagesInZone[stageInZoneIndex + 1]) : null
+        };
       }
     },
     watch: {
-      '$route' () {
-        this.checkRoute()
+      $route() {
+        this.checkRoute();
       }
     },
-    beforeMount () {
-      this.checkRoute()
+    beforeMount() {
+      this.checkRoute();
     },
-    mounted(){
-      if(this.stage){
-        let Stage=get.stages.byStageCode(this.stage);
-        this.selectStage(Stage.zoneId,Stage.stageId);
+    mounted() {
+      if (this.stage) {
+        let Stage = get.stages.byStageCode(this.stage);
+        console.log(Stage)
+        if (!Stage.notfind) {
+          this.selectStage(Stage.zoneId, Stage.stageId);
+        }
       }
     },
     methods: {
-      selectStage (zone, stage, incrementStep = true) {
+      selectStage(zone, stage, incrementStep = true) {
         Console.log("StageSelector", "chose", zone, stage);
         this.selected.zone = zone;
         this.selected.stage = stage;
-        this.$emit("select", {zone, stage});
+        this.$emit("select", { zone, stage });
         if (incrementStep) {
-          this.step += 1
+          this.step += 1;
         } else {
           this.$router.push({
             name: this.routerNames.details,
@@ -433,10 +441,10 @@
               zoneId: this.selected.zone,
               stageId: this.selected.stage
             }
-          })
+          });
         }
       },
-      checkRoute () {
+      checkRoute() {
         if (!this.bindRouter) return;
         if (this.$route.name === this.routerNames.details) {
           this.internalStep = 2;
@@ -444,7 +452,7 @@
           const stage = this.$route.params.stageId;
           this.selected.zone = zone;
           this.selected.stage = stage;
-          this.$emit("select", {zone, stage});
+          this.$emit("select", { zone, stage });
         } else if (this.$route.name === this.routerNames.index) {
           this.internalStep = 1;
 
@@ -452,11 +460,13 @@
           this.selected.stage = null;
         }
       },
-      genActivityTime (zone) {
-        return zone.isPermanentOpen ? this.$t('zone.status.permanentOpen') : this.$t('zone.opensAt', zone.activityActiveTime)
+      genActivityTime(zone) {
+        return zone.isPermanentOpen
+          ? this.$t("zone.status.permanentOpen")
+          : this.$t("zone.opensAt", zone.activityActiveTime);
       }
-    },
-  }
+    }
+  };
 </script>
 
 <style scoped>
@@ -464,21 +474,21 @@
     width: 100%;
   }
 
-.stage-id--background {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  color: rgba(255, 255, 255, .45);
-  user-select: none;
-  z-index: 0;
-  letter-spacing: -.10em !important;
-  word-break: break-all;
-  overflow: hidden;
-  pointer-events: none;
-  text-align: right;
-}
+  .stage-id--background {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    color: rgba(255, 255, 255, 0.45);
+    user-select: none;
+    z-index: 0;
+    letter-spacing: -0.1em !important;
+    word-break: break-all;
+    overflow: hidden;
+    pointer-events: none;
+    text-align: right;
+  }
   .theme--light .stage-id--background {
-    color: rgba(0, 0, 0, .3);
+    color: rgba(0, 0, 0, 0.3);
   }
 
   .stage-card--background {
@@ -488,22 +498,22 @@
   }
 
   .theme--light .stage-card--header {
-    background: rgba(240, 240, 240, .9) !important;
+    background: rgba(240, 240, 240, 0.9) !important;
     background: linear-gradient(to bottom, rgba(240, 240, 240, 0.9), rgba(240, 240, 240, 0.85)) !important;
   }
 
   .theme--light .stage-card--content {
-    background: rgba(255, 255, 255, .85) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)) !important;
   }
 
   .theme--dark .stage-card--header {
-    background: rgba(30, 30, 30, .9) !important;
+    background: rgba(30, 30, 30, 0.9) !important;
     background: linear-gradient(to bottom, rgba(30, 30, 30, 0.9), rgba(30, 30, 30, 0.85)) !important;
   }
 
   .theme--dark .stage-card--content {
-    background: rgba(0, 0, 0, .8) !important;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.70)) !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.7)) !important;
   }
 </style>

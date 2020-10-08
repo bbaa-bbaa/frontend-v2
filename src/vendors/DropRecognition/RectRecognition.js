@@ -13,9 +13,10 @@ export default class RectRecognition {
       }
       YAxis[y] /= 3;
     }
+    console.log(YAxis)
     let DataAreaSpilt = -1;
     for (let y = 1; y < height; y++) {
-      if (YAxis[y - 1] - YAxis[y] > 20000) {
+      if (YAxis[y - 1] - YAxis[y] > 15000) {
         let cancel = false;
         for (let x = 0; x < width; x++) {
           if (ImageData[y][x].reduce((a, b) => a + b) / 3 > 100) {
