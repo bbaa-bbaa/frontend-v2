@@ -1,40 +1,94 @@
 <template>
   <v-stepper
     v-model="step"
-    :alt-labels="!small"
-    class="transparent elevation-0 full-width pa-4"
+    alt-labels
+    class="transparent elevation-0 full-width pa-md-4 pa-lg-4 pa-xl-4"
   >
     <v-stepper-header
-      class="bkop-light elevation-4"
+      class="bkop-light elevation-4 py-4 px-5 d-flex flex-row position-relative align-center"
       style="border-radius: 4px"
     >
-      <v-stepper-step
-        :complete="step > 1"
-        :editable="step > 1"
-        :step="1"
-      >
-        <span
-          class="text-center"
-          style="word-break: keep-all"
-        > {{ $t("zone.name") }} & {{ $t("stage.name") }} </span>
-        <small
-          v-if="step > 1"
-          class="mt-2"
+      <v-fade-transition>
+        <v-img
+          v-if="currentStageImage"
+          key="exact"
+          :src="currentStageImage"
+          class="stepper-header--background"
+          gradient="160deg, rgba(0, 0, 0, .95), rgba(0, 0, 0, .4)"
+
+          style="filter: brightness(0.8)"
+        />
+
+        <v-img
+          v-else
+          key="default"
+          :src="stageImages._default"
+          class="stepper-header--background stepper-header--background__animated"
+          position=""
         >
-          {{ strings.translate(selectedStage, "code") }}
-        </small>
-      </v-stepper-step>
+          <v-overlay
+            absolute
+            style="background: linear-gradient(150deg, rgba(0, 0, 0, .95), rgba(0, 0, 0, 0))"
+          />
+        </v-img>
+      </v-fade-transition>
 
-      <v-divider />
+      <BackButton
+        :name="$t('stage.selector.title')"
+        :active="step > 1"
 
-      <v-stepper-step
-        :complete="step === 2"
-        :step="2"
-      >
-        {{ name }}
-      </v-stepper-step>
+        @back="step = 1"
+      />
+
+      <v-spacer />
+
+      <v-slide-x-transition>
+        <div
+          v-if="step === 2"
+          class="d-flex flex-row"
+        >
+          <v-slide-x-transition hide-on-leave>
+            <StageCard
+              v-if="relativeStages.prev"
+              key="left"
+
+              left
+              :dense="$vuetify.breakpoint.xsOnly"
+              :stage="relativeStages.prev"
+              @click.native="selectStage(relativeStages.prev.zoneId, relativeStages.prev.stageId, false)"
+            />
+          </v-slide-x-transition>
+
+          <v-slide-x-reverse-transition hide-on-leave>
+            <StageCard
+              v-if="relativeStages.next"
+              key="right"
+
+              right
+              :dense="$vuetify.breakpoint.xsOnly"
+              :stage="relativeStages.next"
+              @click.native="selectStage(relativeStages.next.zoneId, relativeStages.next.stageId, false)"
+            />
+          </v-slide-x-reverse-transition>
+        </div>
+      </v-slide-x-transition>
+
+      <!--      <v-expand-transition>-->
+      <!--        <div-->
+      <!--          v-if="step === 2"-->
+      <!--          class="d-flex flex-column align-start justify-center"-->
+      <!--        >-->
+      <!--          <h2 class="title">-->
+      <!--            {{ name }}-->
+      <!--          </h2>-->
+
+      <!--          <span class="subtitle-1">-->
+      <!--            {{ strings.translate(selectedStage, "code") }}-->
+      <!--          </span>-->
+      <!--        </div>-->
+      <!--      </v-expand-transition>-->
     </v-stepper-header>
-    <v-stepper-items class="stepper-overflow-initial">
+    <v-stepper-items>
       <v-stepper-content
         :step="1"
         :class="{ 'pa-0': small }"
@@ -148,39 +202,13 @@
         :step="2"
         class="pa-0 pt-2"
       >
-        <v-expand-transition leave-absolute>
-          <div
-            v-if="selected.stage"
-            class="d-flex flex-row align-center"
-          >
-            <v-fade-transition>
-              <StageCard
-                v-if="relativeStages.prev"
-                left
-                :dense="$vuetify.breakpoint.xsOnly"
-                :stage="relativeStages.prev"
-                @click.native="selectStage(relativeStages.prev.zoneId, relativeStages.prev.stageId, false)"
-              />
-            </v-fade-transition>
-            <v-spacer />
-            <v-fade-transition>
-              <StageCard
-                v-if="relativeStages.next"
-                right
-                :dense="$vuetify.breakpoint.xsOnly"
-                :stage="relativeStages.next"
-                @click.native="selectStage(relativeStages.next.zoneId, relativeStages.next.stageId, false)"
-              />
-            </v-fade-transition>
-          </div>
-        </v-expand-transition>
-
         <span
           v-if="!$vuetify.breakpoint.xs"
           class="stage-id--background font-weight-black display-4 px-12 py-6"
         >
           {{ strings.translate(selectedStage, "code") }}
         </span>
+        
         <slot />
       </v-stepper-content>
     </v-stepper-items>
@@ -196,10 +224,11 @@
   import CDN from "@/mixins/CDN";
   import existUtils from "@/utils/existUtils";
   import validator from "@/utils/validator";
+  import BackButton from "@/components/stats/BackButton";
 
   export default {
     name: "StageSelector",
-    components: { StageCard },
+    components: {BackButton, StageCard},
     mixins: [CDN],
     props: {
       name: {
@@ -236,24 +265,34 @@
           stage: null
         },
         stageImages: {
-          act5d0_zone1: this.cdnDeliver("/backgrounds/zones/act5d0_zone1.jpg"),
-          act6d5_zone1: this.cdnDeliver("/backgrounds/zones/act6d5_zone1.jpg"),
-          act7d5_zone1: this.cdnDeliver("/backgrounds/zones/act7d5_zone1.jpg"),
-          act9d0_zone1: this.cdnDeliver("/backgrounds/zones/act9d0_zone1.jpg"),
-          act10d5_zone1: this.cdnDeliver("/backgrounds/zones/act10d5_zone1.jpg"),
-          act11d0_zone1: this.cdnDeliver("/backgrounds/zones/act11d0_zone1.jpg"),
-          "1stact_zone1": this.cdnDeliver("/backgrounds/zones/A001_zone1.jpg"),
-          act3d0_zone1: this.cdnDeliver("/backgrounds/zones/A003_zone1.jpg"),
-          act4d0_zone1: this.cdnDeliver("/backgrounds/zones/main_e0.jpg"),
-          main_0: this.cdnDeliver("/backgrounds/zones/main_0.jpg"),
-          main_1: this.cdnDeliver("/backgrounds/zones/main_1.jpg"),
-          main_2: this.cdnDeliver("/backgrounds/zones/main_2.jpg"),
-          main_3: this.cdnDeliver("/backgrounds/zones/main_3.jpg"),
-          main_4: this.cdnDeliver("/backgrounds/zones/main_4.jpg"),
-          main_5: this.cdnDeliver("/backgrounds/zones/main_5.jpg"),
-          main_6: this.cdnDeliver("/backgrounds/zones/main_6.jpg"),
-          main_7: this.cdnDeliver("/backgrounds/zones/main_7.jpg"),
-          gachabox: this.cdnDeliver("/backgrounds/zones/gachabox.jpg")
+          "act5d0_zone1": this.cdnDeliver('/backgrounds/zones/act5d0_zone1.jpg'),
+          "act6d5_zone1": this.cdnDeliver('/backgrounds/zones/act6d5_zone1.jpg'),
+          "act7d5_zone1": this.cdnDeliver('/backgrounds/zones/act7d5_zone1.jpg'),
+          "act9d0_zone1": this.cdnDeliver('/backgrounds/zones/act9d0_zone1.jpg'),
+          "act10d5_zone1": this.cdnDeliver('/backgrounds/zones/act10d5_zone1.jpg'),
+          "act11d0_zone1": this.cdnDeliver('/backgrounds/zones/act11d0_zone1.jpg'),
+          "1stact_zone1": this.cdnDeliver('/backgrounds/zones/A001_zone1.jpg'),
+          "act3d0_zone1": this.cdnDeliver('/backgrounds/zones/A003_zone1.jpg'),
+          "act4d0_zone1": this.cdnDeliver('/backgrounds/zones/main_e0.jpg'),
+          "main_0": this.cdnDeliver('/backgrounds/zones/main_0.jpg'),
+          "main_1": this.cdnDeliver('/backgrounds/zones/main_1.jpg'),
+          "main_2": this.cdnDeliver('/backgrounds/zones/main_2.jpg'),
+          "main_3": this.cdnDeliver('/backgrounds/zones/main_3.jpg'),
+          "main_4": this.cdnDeliver('/backgrounds/zones/main_4.jpg'),
+          "main_5": this.cdnDeliver('/backgrounds/zones/main_5.jpg'),
+          "main_6": this.cdnDeliver('/backgrounds/zones/main_6.jpg'),
+          "main_7": this.cdnDeliver('/backgrounds/zones/main_7.jpg'),
+          "gachabox": this.cdnDeliver('/backgrounds/zones/gachabox.jpg'),
+          "act12d0_zone1": this.cdnDeliver('/backgrounds/zones/act12d0_zone1.jpg'),
+          "act13d0_zone1": this.cdnDeliver('/backgrounds/zones/act13d0_zone1.jpg'),
+          "act13d5_zone1": this.cdnDeliver('/backgrounds/zones/act13d5_zone1.jpg'),
+          // "act13d5_zone1": require("@/assets/zonePageBackgrounds/png/act13d5_zone1.png"),
+
+          // 骑兵与猎人 复刻：复用原活动（1stact_zone1）
+          "act13d2_zone1": this.cdnDeliver('/backgrounds/zones/A001_zone1.jpg'),
+
+          // 选择页面背景
+          "_default": this.cdnDeliver('/backgrounds/zones/default.jpg'),
         }
       };
     },
@@ -392,15 +431,29 @@
       },
       selectedStage() {
         if (!this.selected.stage) return {};
-        return get.stages.byStageId(this.selected.stage);
+        return get.stages.byStageId(this.selected.stage)
+      },
+      currentStageImage() {
+        const stage = this.selectedStage
+        if (this.lowData) return null
+
+        if (validator.have(this.stageImages, stage.zoneId)) {
+          return this.stageImages[stage.zoneId]
+        } else {
+          return null
+        }
       },
       relativeStages() {
         if (!this.selected.stage) return null;
         const allStagesInZone = get.stages.byParentZoneId(this.selected.zone);
-        const stageInZoneIndex = allStagesInZone.indexOf(this.selectedStage);
+        const stageInZoneIndex = allStagesInZone.indexOf(allStagesInZone.find(el => el.stageId === this.selected.stage));
+
+        const self = this;
+
         function validStage(stage) {
           // console.log(stageInZoneIndex, stage)
-          return existUtils.existence(stage) ? stage : null;
+          if (self.hideClosed && (!stage || !stage["dropInfos"])) return null
+          return existUtils.existence(stage) ? stage : null
         }
 
         return {
@@ -516,4 +569,32 @@
     background: rgba(0, 0, 0, 0.8) !important;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.7)) !important;
   }
+
+  .stepper-header--background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    
+    border-radius: 4px !important;
+    overflow: hidden;
+  }
+
+  ::v-deep .stepper-header--background__animated > .v-image__image {
+    background-repeat: repeat;
+    background-size: 600px;
+
+    animation: stepper-header-background-animation 55s infinite linear;
+  }
+
+  @keyframes stepper-header-background-animation {
+    from {
+      background-position: 0% 0%;
+    }
+    to {
+      background-position: 600px 0%;
+    }
+  }
+
 </style>
