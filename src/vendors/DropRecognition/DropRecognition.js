@@ -121,6 +121,15 @@ export default class DropRecognition {
         })(Rect.AreaDiff / 2000);
         Object.assign(Result, Item);
       }
+      if(Result.ItemId) {
+        let skip = true;
+        for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
+          if ((Drop.dropType == Type || Type == "ALL_DROP") && Drop.itemId && Drop.itemId != "furni") {
+            if(Drop.itemId == Result.ItemId) skip=false;
+          }
+        }
+        if(skip) Result.type="FIXED_DROP";
+      }
       this.Items.push(Result);
     }
   }
@@ -149,8 +158,8 @@ export default class DropRecognition {
       for (let v of Object.values(DropRecognition.Stage)) {
         if (v.dropInfos) {
           for (let i of v.dropInfos) {
-            if (!(i.ItemId in ItemRecognition.ItemSourceHash)) {
-              throw Error("Data Error"); //数据不完整
+            if (i.ItemId && !(ItemRecognition.ItemSourceHash[i.ItemId])) {
+              throw new Error("Data Error")
             }
           }
         }
