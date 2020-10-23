@@ -13,7 +13,6 @@ export default class RectRecognition {
       }
       YAxis[y] /= 3;
     }
-    console.log(YAxis)
     let DataAreaSpilt = -1;
     for (let y = 1; y < height; y++) {
       if (YAxis[y - 1] - YAxis[y] > 15000) {

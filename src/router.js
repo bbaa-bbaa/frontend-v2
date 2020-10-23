@@ -88,7 +88,8 @@ const router = new Router({
           component: RecognitionReport,
           meta: {
             icon: "mdi-magnify",
-            i18n: "menu.recognitionreport"
+            i18n: "menu.recognitionreport",
+            showOnServer:["CN"]
           }
         }
       ]

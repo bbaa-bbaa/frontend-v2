@@ -473,7 +473,6 @@
     mounted() {
       if (this.stage) {
         let Stage = get.stages.byStageCode(this.stage);
-        console.log(Stage)
         if (!Stage.notfind) {
           this.selectStage(Stage.zoneId, Stage.stageId);
         }
