@@ -13,7 +13,6 @@ class RecognitionData {
     let DataBuffer = new Uint8Array(AllSize);
     let index = 0;
     // Write Header
-    DataBuffer[index++] = 3; //Version
     DataBuffer[index++] = (Data[Id[0]].hash[0].length >> 8) & 0b11111111;
     DataBuffer[index++] = Data[Id[0]].hash[0].length & 0b11111111;
 
@@ -48,7 +47,7 @@ class RecognitionData {
     return DataBuffer;
   }
   static Decode(Encoded) {
-    let Index = 1;
+    let Index = 0;
     let BitLength = (Encoded[Index] << 8) | Encoded[Index + 1];
     Index += 2;
     let Mode = "KeySize";
@@ -83,7 +82,8 @@ class RecognitionData {
           var Byte = Encoded[Index];
           var BinByte = Byte.toString("2").padStart(8, "0").split("");
           for (let Bit of BinByte) {
-            if (Data[DataC].push(Bit == "1") == BitLength) {
+            let nowIndex=Data[DataC].push(Bit == "1");
+            if (nowIndex == BitLength) {
               if (++DataC == 3) {
                 OutPut[Key] = {hash:Data,type:Type};
                 Mode = "KeySize";
