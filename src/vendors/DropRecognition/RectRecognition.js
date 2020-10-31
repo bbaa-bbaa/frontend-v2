@@ -15,7 +15,7 @@ export default class RectRecognition {
     }
     let DataAreaSpilt = -1;
     for (let y = 1; y < height; y++) {
-      if (YAxis[y - 1] - YAxis[y] > 15000) {
+      if ((YAxis[y - 1] - YAxis[y])/width > 11.4) {
         let cancel = false;
         for (let x = 0; x < width; x++) {
           if (ImageData[y][x].reduce((a, b) => a + b) / 3 > 100) {

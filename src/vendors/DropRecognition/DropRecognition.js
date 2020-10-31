@@ -59,6 +59,7 @@ export default class DropRecognition {
   }
   detectFurniture() {
     let DetectType = ["LUCKY_DROP", "SPECIAL_DROP", "ALL_DROP"];
+    if (this.BoundData.Items.length < 3) return;
     for (let Rect of this.BoundData.Items) {
       if (DetectType.includes(Rect.type)) {
         let OtherItems = this.BoundData.Items.filter(a => a != Rect);
@@ -83,13 +84,15 @@ export default class DropRecognition {
       let Result = { type: Type };
       if (DetectType.includes(Type)) {
         let DropList = [];
-        for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
-          if ((Drop.dropType == Type || Type == "ALL_DROP") && Drop.itemId && Drop.itemId != "furni") {
-            DropList.push({ id: Drop.itemId, range: Drop.bounds });
+        if (DropRecognition.Stage[this.Stage.Code] && DropRecognition.Stage[this.Stage.Code].dropInfos) {
+          for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
+            if ((Drop.dropType == Type || Type == "ALL_DROP") && Drop.itemId && Drop.itemId != "furni") {
+              DropList.push({ id: Drop.itemId, range: Drop.bounds });
+            }
           }
         }
         for (let Drop of DropRecognition.ActivityItem) {
-          DropList.push({ id: Drop, range: {lower:0,upper:999} });
+          DropList.push({ id: Drop, range: { lower: 0, upper: 999 } });
         }
         // console.log(Type);
         let Item = new ItemRecognition(
@@ -103,32 +106,40 @@ export default class DropRecognition {
         Item.ItemId = "furni";
         Item.Count = 1;
         Item.Confidence.Count = [1];
-
-        Item.Confidence.ItemId = (ratio => {
-          if (ratio > 1) {
-            return 1;
-          }
-          let range, linear_val;
-          if (ratio < 0.5) {
-            range = 1.0 - 0.5;
-            linear_val = ratio / (range * 2.0);
-            return linear_val;
-          } else {
-            range = 0.5;
-            linear_val = ratio / (range * 2.0);
-            return linear_val + (1.0 - linear_val) * Math.pow((linear_val - 0.5) * 2, 0.2);
-          }
-        })(Rect.AreaDiff / 2000);
+        if (Rect.AreaDiff) {
+          Item.Confidence.ItemId = (ratio => {
+            if (ratio > 1) {
+              return 1;
+            }
+            let range, linear_val;
+            if (ratio < 0.5) {
+              range = 1.0 - 0.5;
+              linear_val = ratio / (range * 2.0);
+              return linear_val;
+            } else {
+              range = 0.5;
+              linear_val = ratio / (range * 2.0);
+              return linear_val + (1.0 - linear_val) * Math.pow((linear_val - 0.5) * 2, 0.2);
+            }
+          })(Rect.AreaDiff / 2000);
+        } else {
+          Item.Confidence.ItemId = 0.5;
+        }
         Object.assign(Result, Item);
       }
-      if(Result.ItemId) {
+      if (
+        Result.ItemId &&
+        Result.ItemId != "furni" &&
+        DropRecognition.Stage[this.Stage.Code] &&
+        DropRecognition.Stage[this.Stage.Code].dropInfos
+      ) {
         let skip = true;
         for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
           if ((Drop.dropType == Type || Type == "ALL_DROP") && Drop.itemId && Drop.itemId != "furni") {
-            if(Drop.itemId == Result.ItemId) skip=false;
+            if (Drop.itemId == Result.ItemId) skip = false;
           }
         }
-        if(skip) Result.type="FIXED_DROP";
+        if (skip) Result.type = "FIXED_DROP";
       }
       this.Items.push(Result);
     }
@@ -158,8 +169,8 @@ export default class DropRecognition {
       for (let v of Object.values(DropRecognition.Stage)) {
         if (v.dropInfos) {
           for (let i of v.dropInfos) {
-            if (i.ItemId && !(ItemRecognition.ItemSourceHash[i.ItemId])) {
-              throw new Error("Data Error")
+            if (i.ItemId && !ItemRecognition.ItemSourceHash[i.ItemId]) {
+              throw new Error("Data Error");
             }
           }
         }
