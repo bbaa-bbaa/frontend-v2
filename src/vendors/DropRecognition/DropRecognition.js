@@ -2,6 +2,7 @@ import RectRecognition from "./RectRecognition";
 import StageRecognition from "./StageRecognition";
 import ItemRecognition from "./ItemRecognition";
 import RecognitionData from "./Data/RecognitionData";
+import DropTypeRecognition from "./DropTypeRecognition";
 export default class DropRecognition {
   constructor(img) {
     this.Image = img;
@@ -30,6 +31,7 @@ export default class DropRecognition {
       }
     }
     this.RectRecognition();
+    this.DropType = new DropTypeRecognition(this.BoundData.DropType, this.BoundData.Items, this.matrixImageData);
     if (this.Debug) {
       for (let Rect of this.BoundData.mergedRects.Right) {
         this.ctx.strokeRect(Rect.left, Rect.top, Rect.width, Rect.height);
@@ -140,6 +142,19 @@ export default class DropRecognition {
           }
         }
         if (skip) Result.type = "FIXED_DROP";
+      }
+      if (Result.type == "ALL_DROP" && Result.Confidence.ItemId > 0.7) {
+        let Types = [];
+        if (DropRecognition.Stage[this.Stage.Code] && DropRecognition.Stage[this.Stage.Code].dropInfos) {
+          for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
+            if (Drop.itemId == Result.ItemId) {
+              Types.push(Drop.dropType);
+            }
+          }
+        }
+        if (Types.length == 1) {
+          Result.type = Types[0];
+        }
       }
       this.Items.push(Result);
     }

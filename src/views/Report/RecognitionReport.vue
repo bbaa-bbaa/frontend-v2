@@ -611,7 +611,7 @@
           Ret.Code = Stage.Stage.Code;
           Ret.Index = Stage.idx;
           for (let Item of Stage.Items) {
-            if (Item.ItemId && Item.Count) {
+            if (Item.ItemId && Item.Count && Item.type !== "FIXED_DROP") {
               if (!Ret.Items[Item.ItemId]) {
                 Ret.Items[Item.ItemId] = 0;
               }
@@ -807,7 +807,7 @@
             return false;
           })
         ) {
-          snackbar.launch("info","2000","report.recognition.typeerror")
+          snackbar.launch("info", 2000, "report.recognition.typeerror");
           return;
         }
 

@@ -61,7 +61,7 @@ export default class RectRecognition {
     }
     this.Items.sort((a, b) => a.left - b.left);
   }
-  GetDropType(Rects, ImageData) {
+  GetDropType(Rects) {
     let top = this.Items.reduce((a, b) => a + b.bottom, 0) / this.Items.length;
     let DropType = [];
     for (let Rect of Rects) {
@@ -69,34 +69,13 @@ export default class RectRecognition {
         DropType.push({
           left: Rect.left,
           right: Rect.right,
-          type: this.CompareType(ImageData, Rect)
+          top:Rect.top,
+          bottom:Rect.bottom,
+          type:"ALL_DROP"
         });
       }
     }
-    for (let Rect of this.Items) {
-      for (let type of DropType) {
-        let [left, right] = Rect.direction(type);
-        if (!left && !right) {
-          Rect.type = type.type;
-        }
-      }
-    }
-  }
-  RGBDiff(rgb1, rgb2) {
-    return rgb1.map((v, i) => Math.abs(v - rgb2[i])).reduce((a, b) => a + b);
-  }
-  CompareType(ImageData, Rect) {
-    let Type = Object.entries(RectRecognition.DropTypeColor);
-    let XCenter = (Rect.left + Rect.right) >> 1;
-    for (let y = Rect.top; y <= Rect.bottom; y++) {
-      let rgb = ImageData[y][XCenter];
-      for (let [type, color] of Type) {
-        if (color(...rgb)) {
-          return type;
-        }
-      }
-    }
-    return "ALL_DROP";
+    this.DropType=DropType.sort((a,b)=>a.left - b.left)
   }
   Binarization(width, height, ImageData) {
     let Matrix = [];
@@ -191,20 +170,3 @@ export default class RectRecognition {
     return C / (Rect.width * Rect.height) > 0.1;
   }
 }
-RectRecognition.DropTypeColor = {
-  SPECIAL_DROP: (R, G, B) => {
-    return Math.abs(R - 240) < 5 && Math.abs(G - 100) < 10 && B < 50;
-  },
-  NORMAL_DROP: (R, G, B) => {
-    return Math.abs(R - 175) + Math.abs(G - 175) + Math.abs(B - 175) < 20;
-  },
-  EXTRA_DROP: (R, G, B) => {
-    return G > R && G > B && B < 150 && R > 200 && G > 200;
-  },
-  FIXED_DROP: (R, G, B) => {
-    return R > 200 && Math.abs(G - 200) < 20 && B < 120;
-  },
-  LUCKY_DROP: (R, G, B) => {
-    return Math.abs(R - 250) < 5 && Math.abs(G - 100) < 10 && B < 50;
-  }
-};
