@@ -142,7 +142,7 @@ function compareMatrix(Matrix1, Matrix2) {
 function genFontData(size) {
   let Canvas = document.createElement("canvas");
   let Ctx = Canvas.getContext("2d");
-  Ctx.font = `${size} 'Novecento WideBold'`;
+  Ctx.font = `${size} 'Novecentosanswide-Bold'`;
   Ctx.fillStyle = "#000000";
   Ctx.textBaseline = "top";
   let Data = {};
@@ -151,7 +151,7 @@ function genFontData(size) {
     let Size = Ctx.measureText(Char);
     Canvas.height = Size.actualBoundingBoxAscent + Size.actualBoundingBoxDescent;
     Canvas.width = Size.width;
-    Ctx.font = `${size} 'Novecento WideBold'`;
+    Ctx.font = `${size} 'Novecentosanswide-Bold'`;
     Ctx.fillStyle = "#000000";
     Ctx.textBaseline = "top";
     Ctx.clearRect(0, 0, Canvas.width, Canvas.height);

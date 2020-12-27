@@ -70,8 +70,7 @@ export default class RectRecognition {
           left: Rect.left,
           right: Rect.right,
           top:Rect.top,
-          bottom:Rect.bottom,
-          type:"ALL_DROP"
+          bottom:Rect.bottom
         });
       }
     }

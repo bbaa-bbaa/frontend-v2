@@ -46,6 +46,7 @@ export default class DropTypeRecognition {
     this.NowIndex = -1;
     this.getDropType(DropType, ImageData);
     this.setItemType(Items);
+    delete this.DropType;
   }
   RGBDiff(rgb1, rgb2) {
     return rgb1.map((v, i) => Math.abs(v - rgb2[i])).reduce((a, b) => a + b);

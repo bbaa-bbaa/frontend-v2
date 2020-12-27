@@ -63,6 +63,7 @@
                 <li>{{ $t("report.recognition.tip2") }}</li>
                 <li>{{ $t("report.notices.rule_3") }}</li>
                 <li>{{ $t("report.notices.rule_4") }}</li>
+                <li>{{ $t("report.recognition.tip3") }}</li>
               </ol>
             </v-alert>
           </v-col>

@@ -7,7 +7,7 @@ for (let hash of NumbersHashList) {
   }
 }
 export default class ItemRecognition {
-  constructor(ImageData, Rules, Rect) {
+  constructor(ImageData, Rect) {
     if (ImageData instanceof Rectangle) {
       this.Bound = ImageData;
       this.Confidence = {
@@ -23,15 +23,14 @@ export default class ItemRecognition {
     this.Height = ImageData.length;
     this.IData = new Array();
     this.Bound = Rect;
-    this.Rules = Rules;
+    this.ComparedItems=[];
     this.Confidence = {
       ItemId: -Infinity,
       Count: []
     };
     this.prepare();
-    this.ItemId = this.getItemId();
-    this.Count = this.getCount();
-    delete this.Rules;
+  }
+  deleteUselessData() {
     delete this.IData;
     delete this.Height;
     delete this.Width;
@@ -55,7 +54,7 @@ export default class ItemRecognition {
       width: this.Width
     };
   }
-  getItemId() {
+  CompareItem(Items) {
     let ItemSourceHash = [];
     let Canvas = document.createElement("canvas");
     Canvas.width = this.Width;
@@ -66,48 +65,33 @@ export default class ItemRecognition {
     Ctx.putImageData(tempIData, 0, 0);
     Ctx.drawImage(Canvas, 0, 0, this.Width, this.Height, 0, 0, 17, 16);
     tempIData = Ctx.getImageData(0, 0, 17, 16);
-    let Confidence = -Infinity;
-    let Result = "";
-    for (let Rule of this.Rules) {
-      if (!ItemRecognition.ItemSourceHash[Rule.id]) continue;
-      ItemSourceHash.push([Rule.id, ItemRecognition.ItemSourceHash[Rule.id]]);
+    for (let Item of Items) {
+      if (!ItemRecognition.ItemSourceHash[Item.ItemId]) continue;
+      ItemSourceHash.push([Item, ItemRecognition.ItemSourceHash[Item.ItemId]]);
     }
     for (let ItemHash of ItemSourceHash) {
       let Conf = this.CompareItemHash(ItemHash[1], this.getRGBDHash(tempIData));
-      if (Conf > Confidence) {
-        Confidence = Conf;
-        Result = ItemHash[0];
-      }
-    }
-    this.Confidence.ItemId = Confidence;
-    if (!isNaN(Number(Result))) {
-      let ItemId = Number(Result);
-      let PId = Math.floor(ItemId / 1000);
-      if (PId == 2) {
-        let ColorList = [
-          [215, 240, 9],
-          [10, 175, 241],
-          [242, 217, 11],
-          [255, 249, 225]
-        ];
-
-        let Distance = Infinity,
-          Ret = -1;
-        for (let [idx, Color] of ColorList.entries()) {
-          let dis = this.RGBDiff(this.Matrix[this.Height >> 1][this.Width >> 1], Color);
-          if (dis < Distance) {
-            Distance = dis;
-            Ret = PId * 1000 + idx + 1;
-          }
-        }
-        if (this.Rules.some(a => a.id == Ret)) {
-          return Ret;
-        } else {
-          this.Confidence.ItemId = Math.max(0, this.Confidence.ItemId - 0.1);
+      if (!isNaN(Number(ItemHash[0]))) {
+        let ItemId = Number(ItemHash[0]);
+        let PId = Math.floor(ItemId / 1000);
+        let DId = (ItemId % 1000) - 1;
+        if (PId == 2) {
+          let ColorList = [
+            [215, 240, 9],
+            [10, 175, 241],
+            [242, 217, 11],
+            [255, 249, 225]
+          ];
+          let dis = this.RGBDiff(this.Matrix[this.Height >> 1][this.Width >> 1], ColorList[DId]);
+          Conf=(1-(dis/255*3)) * (Conf > 0.6) ? 1 : Conf+0.2;
         }
       }
+      this.ComparedItems.push({ Item: ItemHash[0], Confidence: Conf });
     }
-    return Result;
+    return this.ComparedItems.sort((a,b)=>b.Confidence-a.Confidence);
+  }
+  getItemId(Items) {
+    return this.CompareItem(Items)[0].ItemId;
   }
   RGBDiff(rgb1, rgb2) {
     return rgb1.map((v, i) => Math.abs(v - rgb2[i])).reduce((a, b) => a + b);
@@ -126,17 +110,8 @@ export default class ItemRecognition {
       (Math.max(Hash1String.length, Hash2String.length) - Distance) / Math.max(Hash1String.length, Hash2String.length)
     );
   }
-  getCount() {
-    if (this.ItemId == "") {
-      return NaN;
-    }
-    let Range = this.Rules.find(v => v.id == this.ItemId);
-    if (Range) {
-      Range = Range.range;
-    } else {
-      return;
-    }
-    let NumRange = [Range.upper > 9 ? 0 : Math.max(1, Range.lower), Math.min(9, Range.upper)];
+  getCount(Range) {
+    let NumRange = [Math.max(Range[0],0),Math.min(Range[1],9)];
     let NumList = [];
     for (let i = NumRange[0]; i <= NumRange[1]; i++) {
       NumList.push(i);

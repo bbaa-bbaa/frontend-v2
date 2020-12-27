@@ -2,7 +2,8 @@ import RectRecognition from "./RectRecognition";
 import StageRecognition from "./StageRecognition";
 import ItemRecognition from "./ItemRecognition";
 import RecognitionData from "./Data/RecognitionData";
-import DropTypeRecognition from "./DropTypeRecognition";
+import TypeGroup from "./TypeGroup";
+//import DropTypeRecognition from "./DropTypeRecognition";
 export default class DropRecognition {
   constructor(img) {
     this.Image = img;
@@ -19,6 +20,7 @@ export default class DropRecognition {
     this.BoundData = {};
     this.Stage = {};
     this.Items = [];
+    this.TypeGroups = [];
     for (let index = 0, x = 0, y = 0; index < this.rawImageData.data.length; index += 4) {
       this.matrixImageData[y][x] = [
         this.rawImageData.data[index],
@@ -31,7 +33,6 @@ export default class DropRecognition {
       }
     }
     this.RectRecognition();
-    this.DropType = new DropTypeRecognition(this.BoundData.DropType, this.BoundData.Items, this.matrixImageData);
     if (this.Debug) {
       for (let Rect of this.BoundData.mergedRects.Right) {
         this.ctx.strokeRect(Rect.left, Rect.top, Rect.width, Rect.height);
@@ -45,8 +46,9 @@ export default class DropRecognition {
       );
     }
     this.detectStage();
-    this.detectFurniture();
+    //this.detectFurniture();
     this.detectItem();
+    console.log(this);
     delete this.ctx;
     delete this.Canvas;
     delete this.matrixImageData;
@@ -79,84 +81,35 @@ export default class DropRecognition {
     }
   }
   detectItem() {
-    let DetectType = ["NORMAL_DROP", "EXTRA_DROP", "SPECIAL_DROP", "ALL_DROP"];
+    for (let Bound of this.BoundData.DropType) {
+      this.TypeGroups.push(new TypeGroup(Bound));
+    }
+    let DropList = [];
+    if (DropRecognition.Stage[this.Stage.Code] && DropRecognition.Stage[this.Stage.Code].dropInfos) {
+      for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
+        if (Drop.itemId && Drop.dropType != "furni") {
+          let FindItem=DropList.find((a)=>a.ItemId==Drop.itemId);
+          if(FindItem) {
+            FindItem.Types.push(Drop.dropType);
+            FindItem.Range[Drop.dropType]=[Drop.lower,Drop.upper];
+          } else {
+            let idx=DropList.push({ItemId:Drop.itemId,Range:{},Types:[Drop.dropType]})-1;
+            DropList[idx].Range[Drop.dropType]=[Drop.lower,Drop.upper];
+          }
+        }
+      }
+    }
+    // 补充声望/龙门币
+    DropList.push({ItemId:4001,Range:{},Types:["FIXED_DROP"]})
+    DropList.push({ItemId:"EXP_PLAYER",Range:{},Types:["FIXED_DROP"]})
+    console.log(DropList)
     for (let Rect of this.BoundData.Items) {
-      let Type = Rect.type;
-      delete Rect.type;
-      let Result = { type: Type };
-      if (DetectType.includes(Type)) {
-        let DropList = [];
-        if (DropRecognition.Stage[this.Stage.Code] && DropRecognition.Stage[this.Stage.Code].dropInfos) {
-          for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
-            if ((Drop.dropType == Type || Type == "ALL_DROP") && Drop.itemId && Drop.itemId != "furni") {
-              DropList.push({ id: Drop.itemId, range: Drop.bounds });
-            }
-          }
-        }
-        for (let Drop of DropRecognition.ActivityItem) {
-          DropList.push({ id: Drop, range: { lower: 0, upper: 999 } });
-        }
-        // console.log(Type);
-        let Item = new ItemRecognition(
-          this.getImageMatrix(Rect.left, Rect.top, Rect.right, Rect.bottom),
-          DropList,
-          Rect
-        );
-        Object.assign(Result, Item);
-      } else if (Type == "LUCKY_DROP") {
-        let Item = new ItemRecognition(Rect);
-        Item.ItemId = "furni";
-        Item.Count = 1;
-        Item.Confidence.Count = [1];
-        if (Rect.AreaDiff) {
-          Item.Confidence.ItemId = (ratio => {
-            if (ratio > 1) {
-              return 1;
-            }
-            let range, linear_val;
-            if (ratio < 0.5) {
-              range = 1.0 - 0.5;
-              linear_val = ratio / (range * 2.0);
-              return linear_val;
-            } else {
-              range = 0.5;
-              linear_val = ratio / (range * 2.0);
-              return linear_val + (1.0 - linear_val) * Math.pow((linear_val - 0.5) * 2, 0.2);
-            }
-          })(Rect.AreaDiff / 2000);
-        } else {
-          Item.Confidence.ItemId = 0.5;
-        }
-        Object.assign(Result, Item);
-      }
-      if (
-        Result.ItemId &&
-        Result.ItemId != "furni" &&
-        DropRecognition.Stage[this.Stage.Code] &&
-        DropRecognition.Stage[this.Stage.Code].dropInfos
-      ) {
-        let skip = true;
-        for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
-          if ((Drop.dropType == Type || Type == "ALL_DROP") && Drop.itemId && Drop.itemId != "furni") {
-            if (Drop.itemId == Result.ItemId) skip = false;
-          }
-        }
-        if (skip) Result.type = "FIXED_DROP";
-      }
-      if (Result.type == "ALL_DROP" && Result.Confidence.ItemId > 0.7) {
-        let Types = [];
-        if (DropRecognition.Stage[this.Stage.Code] && DropRecognition.Stage[this.Stage.Code].dropInfos) {
-          for (let Drop of DropRecognition.Stage[this.Stage.Code].dropInfos) {
-            if (Drop.itemId == Result.ItemId) {
-              Types.push(Drop.dropType);
-            }
-          }
-        }
-        if (Types.length == 1) {
-          Result.type = Types[0];
-        }
-      }
-      this.Items.push(Result);
+      let NowItem = new ItemRecognition(this.getImageMatrix(Rect.left, Rect.top, Rect.right, Rect.bottom), Rect);
+      NowItem.Type = this.TypeGroups.find(a => a.inGroup(Rect));
+      let a=NowItem.CompareItem(DropList);
+      console.log(a)
+      NowItem.Type.Items.push(NowItem);
+      this.Items.push(NowItem);
     }
   }
   getImageMatrix(x1, y1, x2, y2) {

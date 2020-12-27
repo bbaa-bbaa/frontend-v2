@@ -5,7 +5,7 @@ import "./Data/NovecentoWideBold.css"
 let FontLoaded = new Promise((resolve) => {
   WebFont.load({
     custom: {
-      families: ["Novecento WideBold"]
+      families: ["Novecentosanswide-Bold"]
     },
     active: function () {
       resolve();
