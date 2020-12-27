@@ -1,4 +1,5 @@
 import store from "../store";
+import haptics from "@/utils/native/haptics";
 
 function getDefaultIcon (type) {
   const MAP = {
@@ -10,7 +11,10 @@ function getDefaultIcon (type) {
 
 export default {
   launch (type, timeout, text, extra, icon) {
-    return store.commit("ui/setSnackbar", {
+    if (type === "error") haptics.error()
+    if (type === "success") haptics.success()
+
+    store.commit("ui/setSnackbar", {
       color: type,
       timeout,
       text,
